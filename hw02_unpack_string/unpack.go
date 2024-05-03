@@ -7,11 +7,13 @@ import (
 	"unicode"
 )
 
+const backSlash = '\u005C'
+
 var ErrDigitStart = errors.New("invalid string: can't start with a digit")
 var ErrHasNumber = errors.New("invalid string: can't have a number")
 var ErrIncorrectEscape = errors.New("invalid string: incorrect usage of escape characters")
 
-func unpack(input string) (string, error) {
+func Unpack(input string) (string, error) {
 	res := strings.Builder{}
 	runes := []rune(input)
 
@@ -32,7 +34,7 @@ func unpack(input string) (string, error) {
 				continue
 			}
 		}
-		if runes[i] == '\u005C' {
+		if runes[i] == backSlash {
 			if i < len(runes)-2 && unicode.IsDigit(runes[i+2]) {
 				repeatCount, _ := strconv.Atoi(string(runes[i+2]))
 				res.WriteString(strings.Repeat(string(runes[i+1]), repeatCount))
@@ -52,9 +54,9 @@ func unpack(input string) (string, error) {
 func validateEscapes(input []rune) ([]rune, error) {
 	var res []rune
 	for i := 0; i < len(input); i++ {
-		if input[i] == '\u005C' {
+		if input[i] == backSlash {
 			// за \ обязательно должна быть цифра или другой \
-			if i+1 < len(input) && (unicode.IsDigit(input[i+1]) || input[i+1] == '\u005C') {
+			if i+1 < len(input) && (unicode.IsDigit(input[i+1]) || input[i+1] == backSlash) {
 				res = append(res, 'a')
 				i++
 			} else { // если после \ ничего нет - это ошибка

@@ -30,7 +30,7 @@ func TestUnpack(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
-			result, err := unpack(tc.input)
+			result, err := Unpack(tc.input)
 			require.NoError(t, err)
 			require.Equal(t, tc.expected, result)
 		})
@@ -42,7 +42,7 @@ func TestUnpackInvalidString(t *testing.T) {
 	for _, tc := range invalidStrings {
 		tc := tc
 		t.Run(tc, func(t *testing.T) {
-			_, err := unpack(tc)
+			_, err := Unpack(tc)
 			require.Truef(t, errors.Is(err, ErrDigitStart), "actual error %q", err)
 		})
 	}
@@ -51,7 +51,7 @@ func TestUnpackInvalidString(t *testing.T) {
 	for _, tc := range invalidStrings {
 		tc := tc
 		t.Run(tc, func(t *testing.T) {
-			_, err := unpack(tc)
+			_, err := Unpack(tc)
 			require.Truef(t, errors.Is(err, ErrHasNumber), "actual error %q", err)
 		})
 	}
@@ -60,7 +60,7 @@ func TestUnpackInvalidString(t *testing.T) {
 	for _, tc := range invalidStrings {
 		tc := tc
 		t.Run(tc, func(t *testing.T) {
-			_, err := unpack(tc)
+			_, err := Unpack(tc)
 			require.Truef(t, errors.Is(err, ErrIncorrectEscape), "actual error %q", err)
 		})
 	}
