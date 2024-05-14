@@ -1,9 +1,10 @@
 package hw03frequencyanalysis
 
 import (
-	"github.com/wasilibs/go-re2"
 	"sort"
 	"strings"
+
+	"github.com/wasilibs/go-re2"
 )
 
 const (
@@ -25,16 +26,13 @@ func (r rating) keys() []string {
 	return keys
 }
 
-func (r rating) sortByKeys() []string {
-	keys := r.keys()
-	sort.Strings(keys)
-	return keys
-}
-
 func (r rating) sortByKeysAndValue() []string {
-	keys := r.sortByKeys()
+	keys := r.keys()
 
 	sort.SliceStable(keys, func(i, j int) bool {
+		if r[keys[i]] == r[keys[j]] {
+			return keys[i] < keys[j]
+		}
 		return r[keys[i]] > r[keys[j]]
 	})
 
