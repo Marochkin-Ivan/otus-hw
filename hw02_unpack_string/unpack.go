@@ -9,9 +9,11 @@ import (
 
 const backSlash = '\u005C'
 
-var ErrDigitStart = errors.New("invalid string: can't start with a digit")
-var ErrHasNumber = errors.New("invalid string: can't have a number")
-var ErrIncorrectEscape = errors.New("invalid string: incorrect usage of escape characters")
+var (
+	ErrDigitStart      = errors.New("invalid string: can't start with a digit")
+	ErrHasNumber       = errors.New("invalid string: can't have a number")
+	ErrIncorrectEscape = errors.New("invalid string: incorrect usage of escape characters")
+)
 
 func Unpack(input string) (string, error) {
 	res := strings.Builder{}
@@ -29,10 +31,10 @@ func Unpack(input string) (string, error) {
 				res.WriteString(strings.Repeat(string(runes[i]), repeatCount))
 				i++ // перескакиваем, чтобы не проверять цифру
 				continue
-			} else {
-				res.WriteString(string(runes[i]))
-				continue
 			}
+
+			res.WriteString(string(runes[i]))
+			continue
 		}
 		if runes[i] == backSlash {
 			if i < len(runes)-2 && unicode.IsDigit(runes[i+2]) {
@@ -40,11 +42,11 @@ func Unpack(input string) (string, error) {
 				res.WriteString(strings.Repeat(string(runes[i+1]), repeatCount))
 				i += 2 // перескакиваем, чтобы не проверять \ и цифру
 				continue
-			} else {
-				res.WriteString(string(runes[i+1]))
-				i++ // перескакиваем, чтобы не проверять \
-				continue
 			}
+
+			res.WriteString(string(runes[i+1]))
+			i++ // перескакиваем, чтобы не проверять \
+			continue
 		}
 	}
 
