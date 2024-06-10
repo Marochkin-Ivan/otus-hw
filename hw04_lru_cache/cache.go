@@ -1,13 +1,6 @@
 package hw04lrucache
 
-import "encoding/json"
-
 type Key string
-
-type CacheElement struct {
-	Key   Key
-	Value any
-}
 
 type Cache interface {
 	Set(key Key, value any) bool
@@ -21,6 +14,11 @@ type lruCache struct {
 	items    map[Key]*ListItem
 }
 
+type cacheItem struct {
+	key   Key
+	value any
+}
+
 func NewCache(capacity int) Cache {
 	return &lruCache{
 		capacity: capacity,
@@ -29,40 +27,50 @@ func NewCache(capacity int) Cache {
 	}
 }
 
-func (c *lruCache) Set(key Key, value any) bool {
-	v, _ := json.Marshal(CacheElement{key, value})
+func newCacheItem(key Key, value any) *cacheItem {
+	return &cacheItem{
+		key:   key,
+		value: value,
+	}
+}
 
-	if item, ok := c.items[key]; ok {
-		item.Value = v
+func (c *lruCache) Set(key Key, value any) bool {
+	// если элемент присутствует в словаре, то обновить его значение и переместить элемент в начало очереди
+	if item, exist := c.items[key]; exist {
+		item.Value.(*cacheItem).value = value
 		c.queue.MoveToFront(item)
+
+		// возвращаемое значение - флаг, присутствовал ли элемент в кэше
 		return true
 	}
 
-	item := c.queue.PushFront(v)
-	c.items[key] = item
+	// если элемента нет в словаре, то добавить в словарь и в начало очереди
+	newItem := c.queue.PushFront(newCacheItem(key, value))
+	c.items[key] = newItem
 
+	// если размер очереди больше ёмкости кэша
 	if c.queue.Len() > c.capacity {
+		// необходимо удалить последний элемент из очереди и его значение из словаря
 		deleteItem := c.queue.Back()
-
-		var el CacheElement
-		_ = json.Unmarshal(deleteItem.Value.([]byte), &el)
-
-		delete(c.items, el.Key)
+		c.queue.Remove(deleteItem)
+		delete(c.items, deleteItem.Value.(*cacheItem).key)
 	}
 
+	// возвращаемое значение - флаг, присутствовал ли элемент в кэше
 	return false
 }
 
 func (c *lruCache) Get(key Key) (any, bool) {
-	if item, ok := c.items[key]; ok {
+	// если элемент присутствует в словаре
+	if item, exist := c.items[key]; exist {
+		// переместить элемент в начало очереди
 		c.queue.MoveToFront(item)
 
-		var el CacheElement
-		_ = json.Unmarshal(item.Value.([]byte), &el)
-
-		return el.Value, true
+		// вернуть его значение и true
+		return item.Value.(*cacheItem).value, true
 	}
 
+	// если элемента нет в словаре, то вернуть nil и false
 	return nil, false
 }
 
