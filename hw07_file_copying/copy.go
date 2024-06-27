@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"github.com/schollz/progressbar/v3"
 	"io"
 	"os"
 )
@@ -44,12 +45,21 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	buffer := bytes.NewBuffer(buf)
 
 	if limit == 0 || limit > int64(buffer.Len()) {
-		_, err = io.Copy(destFile, buffer)
+		bar := progressbar.DefaultBytes(
+			int64(buffer.Len()),
+			"copying...",
+		)
+
+		_, err = io.Copy(io.MultiWriter(destFile, bar), buffer)
 		if err != nil {
 			return err
 		}
 	} else {
-		_, err = io.CopyN(destFile, buffer, limit)
+		bar := progressbar.DefaultBytes(
+			limit,
+			"copying...",
+		)
+		_, err = io.CopyN(io.MultiWriter(destFile, bar), buffer, limit)
 		if err != nil {
 			return err
 		}
