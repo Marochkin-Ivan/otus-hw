@@ -32,7 +32,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	buf := make([]byte, info.Size()-offset)
 	_, err = sourceFile.ReadAt(buf, offset)
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return err
 	}
 
