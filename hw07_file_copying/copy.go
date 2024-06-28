@@ -3,9 +3,10 @@ package main
 import (
 	"bytes"
 	"errors"
-	"github.com/schollz/progressbar/v3"
 	"io"
 	"os"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 var (
@@ -36,7 +37,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		return err
 	}
 
-	destFile, err := os.OpenFile(toPath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
+	destFile, err := os.OpenFile(toPath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0o666)
 	if err != nil {
 		return err
 	}
