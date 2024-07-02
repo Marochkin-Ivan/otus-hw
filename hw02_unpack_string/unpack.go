@@ -16,35 +16,26 @@ var (
 )
 
 func Unpack(input string) (string, error) {
-	res := strings.Builder{}
 	runes := []rune(input)
 
 	if len(runes) == 0 {
 		return "", nil
 	}
 
-	for i := 0; i < len(runes); i++ {
-		if i == 0 && unicode.IsDigit(runes[i]) {
-			return "", ErrDigitStart
-		}
+	if unicode.IsDigit(runes[0]) {
+		return "", ErrDigitStart
+	}
 
+	var res strings.Builder
+	for i := 0; i < len(runes); i++ {
 		if runes[i] == backSlash { // экранирование
-			if i+1 < len(runes) {
-				if unicode.IsDigit(runes[i+1]) || runes[i+1] == backSlash {
-					if i+2 < len(runes) && unicode.IsDigit(runes[i+2]) {
-						repeatCount, _ := strconv.Atoi(string(runes[i+2]))
-						res.WriteString(strings.Repeat(string(runes[i+1]), repeatCount))
-						i += 2 // Пропускаем следующий символ и цифру после экранирования
-					} else {
-						res.WriteRune(runes[i+1])
-						i++ // Пропускаем следующий символ после экранирования
-					}
-				} else {
-					return "", ErrIncorrectEscape
-				}
-			} else {
-				return "", ErrIncorrectEscape
+			escaped, newIndex, err := handleEscape(runes, i)
+			if err != nil {
+				return "", err
 			}
+
+			res.WriteString(escaped)
+			i = newIndex
 			continue
 		}
 
@@ -52,7 +43,7 @@ func Unpack(input string) (string, error) {
 			if i < len(runes)-1 && unicode.IsDigit(runes[i+1]) {
 				repeatCount, _ := strconv.Atoi(string(runes[i+1]))
 				res.WriteString(strings.Repeat(string(runes[i]), repeatCount))
-				i++ // Пропускаем цифру
+				i++ // Пропускаем кол-во повторений
 			} else {
 				res.WriteRune(runes[i])
 			}
@@ -60,11 +51,30 @@ func Unpack(input string) (string, error) {
 		}
 
 		if unicode.IsDigit(runes[i]) {
-			if i == 0 || unicode.IsDigit(runes[i-1]) {
-				return "", ErrHasNumber
-			}
+			return "", ErrHasNumber
 		}
 	}
 
 	return res.String(), nil
+}
+
+func handleEscape(runes []rune, index int) (string, int, error) {
+	if index+1 >= len(runes) {
+		return "", index, ErrIncorrectEscape
+	}
+
+	nextChar := runes[index+1]
+	if unicode.IsDigit(nextChar) || nextChar == backSlash { // экранируются только цифры и слеши
+		if index+2 < len(runes) && unicode.IsDigit(runes[index+2]) {
+			repeatCount, _ := strconv.Atoi(string(runes[index+2]))
+			return strings.Repeat(string(nextChar), repeatCount),
+				index + 2, // пропускаем экранируемый символ и кол-во повторений
+				nil
+		}
+		return string(nextChar),
+			index + 1, // пропускаем экранируемый символ
+			nil
+	}
+
+	return "", index, ErrIncorrectEscape
 }
