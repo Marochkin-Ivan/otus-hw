@@ -1,10 +1,9 @@
 package hw03frequencyanalysis
 
 import (
+	"regexp"
 	"sort"
 	"strings"
-
-	"github.com/wasilibs/go-re2"
 )
 
 const (
@@ -12,7 +11,7 @@ const (
 	dash        = "-"
 )
 
-var wordSurroundedPunctuation = re2.MustCompile(`^[[:punct:]]*[^[:punct:]]+[[:punct:]]*$`)
+var wordSurroundedPunctuation = regexp.MustCompile(`^[[:punct:]]*[^[:punct:]]+[[:punct:]]*$`)
 
 type rating map[string]int
 
