@@ -26,7 +26,9 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		}
 	}
 
-	command := exec.Command(cmd[0], cmd[1:]...)
+	cmdName := cmd[0]
+	cmdArgs := cmd[1:]
+	command := exec.Command(cmdName, cmdArgs...)
 	command.Stdin = os.Stdin
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr

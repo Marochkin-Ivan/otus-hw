@@ -5,13 +5,11 @@ import (
 	"os"
 )
 
-var ErrNotEnoughArgs = "not enough arguments"
-
 func main() {
 	// Place your code here.
 	args := os.Args
 	if len(args) < 3 {
-		log.Fatalln(ErrNotEnoughArgs)
+		log.Fatalln("not enough arguments")
 		return
 	}
 
@@ -21,6 +19,5 @@ func main() {
 		return
 	}
 
-	code := RunCmd(args[2:], env)
-	log.Println(code)
+	os.Exit(RunCmd(args[2:], env))
 }

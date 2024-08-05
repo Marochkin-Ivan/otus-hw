@@ -41,7 +41,7 @@ func TestReadDir(t *testing.T) {
 	t.Run("wrong directory path", func(t *testing.T) {
 		_, err := ReadDir("./testdataaaaa/env")
 
-		require.EqualError(t, err, ErrCantReadDir.Error())
+		require.ErrorIs(t, err, ErrCantReadDir)
 	})
 
 	t.Run("filename with '='", func(t *testing.T) {
@@ -51,7 +51,7 @@ func TestReadDir(t *testing.T) {
 
 		_, err = ReadDir("./testdata/env")
 
-		require.EqualError(t, err, ErrHasForbiddenSymbols.Error())
+		require.ErrorIs(t, err, ErrHasForbiddenSymbols)
 	})
 
 	t.Run("incorrect file", func(t *testing.T) {
@@ -66,6 +66,6 @@ func TestReadDir(t *testing.T) {
 		require.NoError(t, err)
 
 		_, err = ReadDir("./testdata/env")
-		require.EqualError(t, err, ErrCantOpenFile.Error())
+		require.ErrorIs(t, err, ErrCantOpenFile)
 	})
 }

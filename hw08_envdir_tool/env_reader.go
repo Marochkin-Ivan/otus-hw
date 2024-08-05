@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,7 +15,6 @@ var (
 	ErrCantReadDir         = errors.New("can't read directory")
 	ErrCantGetFileStat     = errors.New("can't get file stat")
 	ErrCantOpenFile        = errors.New("can't open file")
-	ErrCantReadFirstLine   = errors.New("can't read first line")
 	ErrHasForbiddenSymbols = errors.New("filename has forbidden symbols")
 )
 
@@ -72,8 +71,7 @@ func ReadDir(dir string) (Environment, error) {
 
 		firstLine, _, err := reader.ReadLine()
 		if err != nil && !errors.Is(err, io.EOF) {
-			log.Println(err)
-			return nil, ErrCantReadFirstLine
+			return nil, fmt.Errorf("can't read first line: %s", err.Error())
 		}
 
 		// терминальные нули (0x00) заменяются на перевод строки (\n)
