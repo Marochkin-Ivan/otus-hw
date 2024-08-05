@@ -71,7 +71,7 @@ func ReadDir(dir string) (Environment, error) {
 
 		firstLine, _, err := reader.ReadLine()
 		if err != nil && !errors.Is(err, io.EOF) {
-			return nil, fmt.Errorf("can't read first line: %s", err.Error())
+			return nil, fmt.Errorf("can't read first line from %s: %w", fileInfo.Name(), err)
 		}
 
 		// терминальные нули (0x00) заменяются на перевод строки (\n)
