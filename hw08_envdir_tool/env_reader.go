@@ -62,16 +62,9 @@ func ReadDir(dir string) (Environment, error) {
 			continue
 		}
 
-		file, err := os.Open(filepath.Join(dir, fileInfo.Name()))
+		firstLine, err := readFileFirstLine(filepath.Join(dir, fileInfo.Name()))
 		if err != nil {
-			return nil, ErrCantOpenFile
-		}
-		defer file.Close()
-		reader := bufio.NewReader(file)
-
-		firstLine, _, err := reader.ReadLine()
-		if err != nil && !errors.Is(err, io.EOF) {
-			return nil, fmt.Errorf("can't read first line from %s: %w", fileInfo.Name(), err)
+			return nil, err
 		}
 
 		// терминальные нули (0x00) заменяются на перевод строки (\n)
@@ -83,4 +76,21 @@ func ReadDir(dir string) (Environment, error) {
 	}
 
 	return env, nil
+}
+
+func readFileFirstLine(filename string) ([]byte, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, ErrCantOpenFile
+	}
+	defer file.Close()
+
+	reader := bufio.NewReader(file)
+
+	firstLine, _, err := reader.ReadLine()
+	if err != nil && !errors.Is(err, io.EOF) {
+		return nil, fmt.Errorf("can't read first line from %s: %w", filename, err)
+	}
+
+	return firstLine, nil
 }
