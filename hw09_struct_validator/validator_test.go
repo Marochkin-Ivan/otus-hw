@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 type UserRole string
@@ -42,10 +44,92 @@ func TestValidate(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			// Place your code here.
+			in: User{
+				ID:    "12345678-1234-5678-1234-567812345678",
+				Name:  "Alice",
+				Age:   30,
+				Email: "alice@example.com",
+				Role:  "admin",
+				Phones: []string{
+					"12345678901",
+					"23456789012",
+				},
+			},
+			expectedErr: nil,
 		},
-		// ...
-		// Place your code here.
+		{
+			in: User{
+				ID:    "short-id",
+				Name:  "Bob",
+				Age:   17,
+				Email: "invalid-email",
+				Role:  "user",
+				Phones: []string{
+					"1234567",
+				},
+			},
+			expectedErr: ValidationErrors{
+				{Field: "ID", Err: fmt.Errorf("length must be 36")},
+				{Field: "Age", Err: fmt.Errorf("value must be at least 18")},
+				{Field: "Email", Err: fmt.Errorf("value does not match regexp: ^\\w+@\\w+\\.\\w+$")},
+				{Field: "Role", Err: fmt.Errorf("value must be one of [admin stuff]")},
+				{Field: "Phones", Err: fmt.Errorf("length must be 11")},
+			},
+		},
+		{
+			in: App{
+				Version: "1.0.0",
+			},
+			expectedErr: nil,
+		},
+		{
+			in: App{
+				Version: "1.0",
+			},
+			expectedErr: ValidationErrors{
+				{Field: "Version", Err: fmt.Errorf("length must be 5")},
+			},
+		},
+		{
+			in: Response{
+				Code: 200,
+				Body: "OK",
+			},
+			expectedErr: nil,
+		},
+		{
+			in: Response{
+				Code: 201,
+				Body: "Created",
+			},
+			expectedErr: ValidationErrors{
+				{Field: "Code", Err: fmt.Errorf("value must be one of [200 404 500]")},
+			},
+		},
+		{
+			in: struct {
+				Field string `validate:"len"`
+			}{
+				Field: "value",
+			},
+			expectedErr: fmt.Errorf("field Field: %w", ErrInvalidValidatorFormat),
+		},
+		{
+			in: struct {
+				Field int `validate:"unknown:10"`
+			}{
+				Field: 5,
+			},
+			expectedErr: fmt.Errorf("field Field: %w", ErrInvalidValidatorType),
+		},
+		{
+			in: struct {
+				Field string `validate:"regexp:[invalid"`
+			}{
+				Field: "value",
+			},
+			expectedErr: fmt.Errorf("field Field: %w", ErrInvalidRegexp),
+		},
 	}
 
 	for i, tt := range tests {
@@ -53,8 +137,8 @@ func TestValidate(t *testing.T) {
 			tt := tt
 			t.Parallel()
 
-			// Place your code here.
-			_ = tt
+			err := Validate(tt.in)
+			require.Equal(t, tt.expectedErr, err)
 		})
 	}
 }
